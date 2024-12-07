@@ -613,26 +613,26 @@ install_klipper() {
             exit 1
         }
     fi
-done
+        done
 
-# Backup and copy configuration files
-for file in sensorless.cfg useful_macros.cfg; do
+        # Backup and copy configuration files
+        for file in sensorless.cfg useful_macros.cfg; do
     if [ -f /usr/data/printer_data/config/$file ]; then
         echo "INFO: Backing up existing $file"
         cp /usr/data/printer_data/config/$file /usr/data/printer_data/config/$file.bak
-    fi
-    cp /usr/data/Crumflight/k1/$file /usr/data/printer_data/config/ || {
+        fi
+        cp /usr/data/Crumflight/k1/$file /usr/data/printer_data/config/ || {
         echo "ERROR: Failed to copy $file to /usr/data/printer_data/config/"
         exit 1
     }
-done
+        done
 
-# Add include for useful_macros.cfg
-if ! command -v $CONFIG_HELPER &>/dev/null; then
-    echo "ERROR: CONFIG_HELPER command not found."
-    exit 1
-fi
-$CONFIG_HELPER --add-include "useful_macros.cfg" || exit 1
+        # Add include for useful_macros.cfg
+        if ! command -v $CONFIG_HELPER &>/dev/null; then
+         echo "ERROR: CONFIG_HELPER command not found."
+        exit 1
+        fi
+        $CONFIG_HELPER --add-include "useful_macros.cfg" || exit 1
 
 
         # FIXME - one day maybe we can get rid of this link
@@ -1224,15 +1224,15 @@ restart_moonraker() {
     echo "INFO: Restarting Moonraker ..."
     /etc/init.d/S56moonraker_service restart
 
-    timeout=60
-    start_time=$(date +%s)
+    #timeout=60
+    #start_time=$(date +%s)
 
     # Wait for Moonraker to start
-echo "INFO: Waiting for Moonraker to start..."
-timeout=120  # Timeout in seconds
-start_time=$(date +%s)
+    echo "INFO: Waiting for Moonraker to start..."
+    timeout=480  # Timeout in seconds
+    start_time=$(date +%s)
 
-while true; do
+    while true; do
     # Query Moonraker API for Klipper path
     KLIPPER_PATH=$(curl -s localhost:7125/printer/info | jq -r .result.klipper_path 2>/dev/null)
     
@@ -1480,9 +1480,9 @@ if [ -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
     probe_model=${probe}
 
     # FIXME - when we migrate cartotouch back to cartographer remember to remove this if
-    if [ "$probe" = "cartotouch" ]; then
-        probe_model=cartographer
-    fi
+    #if [ "$probe" = "cartotouch" ]; then
+    #    probe_model=cartographer
+    #fi
 
     # we want a copy of the file before config overrides are re-applied so we can correctly generate diffs
     # against different generations of the original file
