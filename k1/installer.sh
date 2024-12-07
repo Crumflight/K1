@@ -75,22 +75,8 @@ function update_klipper() {
 }
 
 # special mode to update the repo only
-if [ "$1" = "--update-repo" ] || [ "$1" = "--update-branch" ]; then
-    update_repo /usr/data/Crumflight
-    exit $?
-elif [ "$1" = "--branch" ] && [ -n "$2" ]; then # convenience for testing new features
-    update_repo /usr/data/Crumflight || exit $?
-    cd /usr/data/Crumflight && git switch $2 && cd - > /dev/null
-    update_repo /usr/data/Crumflight
-    exit $?
-elif [ "$1" = "--klipper-branch" ] && [ -n "$2" ]; then # convenience for testing new features
-    update_repo /usr/data/klipper || exit $?
-    cd /usr/data/klipper && git switch $2 && cd - > /dev/null
-    update_repo /usr/data/klipper
-    update_klipper || exit $?
-    exit 0
-elif [ "$1" = "--klipper-repo" ] && [ -n "$2" ]; then # convenience for testing new features
-    klipper_repo=$2
+elif [ "$1" = "--klipper-repo" ] && [ -n "$2" ]; then
+    klipper_repo=${2:-klipper_Kreality} # Default to klipper_Kreality
     if [ -d /usr/data/klipper/.git ]; then
         cd /usr/data/klipper/
         remote_repo=$(git remote get-url origin | awk -F '/' '{print $NF}' | sed 's/.git//g')
