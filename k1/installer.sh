@@ -549,10 +549,10 @@ install_klipper() {
     if [ $? -ne 0 ]; then
         echo
 
-        klipper_repo=klipper
+        klipper_repo=Klipper_kreality
         # Crumflight/k1-carto-klipper is a version of klipper that is the same as k1-klipper/klipper k1_carto branch
-        if [ "$probe" = "cartographer" ]; then
-            klipper_repo=k1-carto-klipper
+        if [ "$probe" = "Klipper_kreality" ]; then
+            klipper_repo=Klipper_kreality
         fi
         if [ "$mode" != "update" ] && [ -d /usr/data/klipper ]; then
             if [ -f /etc/init.d/S55klipper_service ]; then
