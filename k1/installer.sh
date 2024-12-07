@@ -586,20 +586,69 @@ install_klipper() {
         echo "INFO: Updating klipper config ..."
         /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || exit $?
 
+        # Remove existing links
+        if [ -e /usr/share/klipper ]; then
+        echo "INFO: Removing existing /usr/share/klipper"
+        rm -rf /usr/share/klipper
+        fi
+        ln -sf /usr/data/klipper /usr/share/ || {
+        echo "ERROR: Failed to create symbolic link for /usr/share/klipper"
+        exit 1
+        }
+
+        if [ -e /root/klipper ]; then
+        echo "INFO: Removing existing /root/klipper"
+        rm -rf /root/klipper
+        fi
+        ln -sf /usr/data/klipper /root || {
+        echo "ERROR: Failed to create symbolic link for /root/klipper"
+        exit 1
+    }
+
+        # Copy service files
+        for service in S55klipper_service S13mcu_update; do
+    if [ -f /usr/data/Crumflight/k1/services/$service ]; then
+        cp /usr/data/Crumflight/k1/services/$service /etc/init.d/ || {
+            echo "ERROR: Failed to copy $service to /etc/init.d/"
+            exit 1
+        }
+    fi
+done
+
+# Backup and copy configuration files
+for file in sensorless.cfg useful_macros.cfg; do
+    if [ -f /usr/data/printer_data/config/$file ]; then
+        echo "INFO: Backing up existing $file"
+        cp /usr/data/printer_data/config/$file /usr/data/printer_data/config/$file.bak
+    fi
+    cp /usr/data/Crumflight/k1/$file /usr/data/printer_data/config/ || {
+        echo "ERROR: Failed to copy $file to /usr/data/printer_data/config/"
+        exit 1
+    }
+done
+
+# Add include for useful_macros.cfg
+if ! command -v $CONFIG_HELPER &>/dev/null; then
+    echo "ERROR: CONFIG_HELPER command not found."
+    exit 1
+fi
+$CONFIG_HELPER --add-include "useful_macros.cfg" || exit 1
+
+
         # FIXME - one day maybe we can get rid of this link
-        ln -sf /usr/data/klipper /usr/share/ || exit $?
+        #ln -sf /usr/data/klipper /usr/share/ || exit $?
 
         # for scripts like ~/klipper/scripts, a soft link makes things a little bit easier
-        ln -sf /usr/data/klipper/ /root
+        #ln -sf /usr/data/klipper/ /root
 
-        cp /usr/data/Crumflight/k1/services/S55klipper_service /etc/init.d/ || exit $?
+        #cp /usr/data/Crumflight/k1/services/S55klipper_service /etc/init.d/ || exit $?
 
-        cp /usr/data/Crumflight/k1/services/S13mcu_update /etc/init.d/ || exit $?
+        #cp /usr/data/Crumflight/k1/services/S13mcu_update /etc/init.d/ || exit $?
 
-        cp /usr/data/Crumflight/k1/sensorless.cfg /usr/data/printer_data/config/ || exit $?
+        #cp /usr/data/Crumflight/k1/sensorless.cfg /usr/data/printer_data/config/ || exit $?
 
-        cp /usr/data/Crumflight/k1/useful_macros.cfg /usr/data/printer_data/config/ || exit $?
-        $CONFIG_HELPER --add-include "useful_macros.cfg" || exit $?
+        #cp /usr/data/Crumflight/k1/useful_macros.cfg /usr/data/printer_data/config/ || exit $?
+        #$CONFIG_HELPER --add-include "useful_macros.cfg" || exit $?
 
         # the klipper_mcu is not even used, so just get rid of it
         $CONFIG_HELPER --remove-section "mcu rpi" || exit $?
@@ -1178,24 +1227,38 @@ restart_moonraker() {
     timeout=60
     start_time=$(date +%s)
 
-    # this is mostly for k1-qemu where Moonraker takes a while to start up
-    echo "INFO: Waiting for Moonraker ..."
-    while true; do
-        KLIPPER_PATH=$(curl localhost:7125/printer/info 2> /dev/null | jq -r .result.klipper_path)
-        # not sure why, but moonraker will start reporting the location of klipper as /usr/data/klipper
-        # when using a soft link
-        if [ "$KLIPPER_PATH" = "/usr/share/klipper" ] || [ "$KLIPPER_PATH" = "/usr/data/klipper" ]; then
-            break;
-        fi
+    # Wait for Moonraker to start
+echo "INFO: Waiting for Moonraker to start..."
+timeout=120  # Timeout in seconds
+start_time=$(date +%s)
 
-        current_time=$(date +%s)
-        elapsed_time=$((current_time - start_time))
-        
-        if [ $elapsed_time -ge $timeout ]; then
-            break;
-        fi
-        sleep 1
-    done
+while true; do
+    # Query Moonraker API for Klipper path
+    KLIPPER_PATH=$(curl -s localhost:7125/printer/info | jq -r .result.klipper_path 2>/dev/null)
+    
+    # Check if Klipper path is correctly reported
+    if [ "$KLIPPER_PATH" = "/usr/share/klipper" ] || [ "$KLIPPER_PATH" = "/usr/data/klipper" ]; then
+        echo "INFO: Moonraker started and reporting Klipper path: $KLIPPER_PATH"
+        break
+    fi
+
+    # Check elapsed time for timeout
+    current_time=$(date +%s)
+    elapsed_time=$((current_time - start_time))
+
+    if [ $elapsed_time -ge $timeout ]; then
+        echo "ERROR: Timeout while waiting for Moonraker to start."
+        exit 1
+    fi
+
+    # Log progress every 10 seconds
+    if [ $((elapsed_time % 10)) -eq 0 ]; then
+        echo "INFO: Still waiting for Moonraker... Elapsed time: ${elapsed_time}s"
+    fi
+
+    sleep 1
+done
+
 }
 
 # to avoid cluttering the printer_data/config directory lets move stuff

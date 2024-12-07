@@ -23,7 +23,7 @@ setup_git_repo() {
 
     # is this a brand new repo, setup a simple readme as the first commit
     if [ $(ls | wc -l) -eq 0 ]; then
-        echo "# simple af Crumflight-overrides" >> README.md
+        echo "# Crumflight-overrides" >> README.md
         echo "https://github.com/Crumflight/creality/wiki/K1-Stock-Mainboard-Less-Creality#git-backups-for-configuration-overrides" >> README.md
         git add README.md || exit $?
         git commit -m "initial commit" || exit $?
