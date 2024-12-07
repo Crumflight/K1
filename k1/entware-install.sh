@@ -8,7 +8,7 @@ GLIBC=2.27
 
 # for k1 the installed curl does not do ssl, so we replace it first
 # and we can then make use of it going forward
-cp /usr/data/pellcorp/k1/tools/curl /usr/bin/curl
+cp /usr/data/Crumflight/k1/tools/curl /usr/bin/curl
 
 mode=$1
 if [ ! -f /opt/bin/opkg ]; then
@@ -72,7 +72,7 @@ done
 echo 'export PATH="$PATH:/opt/bin:/opt/sbin"' > /etc/profile.d/entware.sh
 
 # this is required so that any services installed by opkg get started
-cp /usr/data/pellcorp/k1/services/S50unslung /etc/init.d/
+cp /usr/data/Crumflight/k1/services/S50unslung /etc/init.d/
 
 if [ ! -f /opt/libexec/sftp-server ]; then
   # by default dropbear does not come with sftp support, so this enables it

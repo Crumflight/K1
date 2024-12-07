@@ -44,7 +44,7 @@ Then you can create a new firmware file, currently without any customations just
 
 **NOTE:** You will be required to enter your `sudo` password
 
-The resulting img file will be located at `/tmp/1.3.3.8-pellcorp/CR4CU220812S11_ota_img_V6.1.3.3.8.img`
+The resulting img file will be located at `/tmp/1.3.3.8-Crumflight/CR4CU220812S11_ota_img_V6.1.3.3.8.img`
 
 ## Testing
 

@@ -21,20 +21,20 @@ FIRMWARE_PASSWORD=$(mkpasswd -m md5 "${BOARD_SHORT_NAME}C3_7e_bz" -S cxswfile)
 version="6.${CREALITY_VERSION}"
 
 function write_ota_info() {
-    echo "ota_version=${version}" > /tmp/${version}-pellcorp/ota_info
-    echo "ota_board_name=${board_name}" >> /tmp/${version}-pellcorp/ota_info
-    echo "ota_compile_time=$(date '+%Y %m.%d %H:%M:%S')" >> /tmp/${version}-pellcorp/ota_info
-    echo "ota_site=http://192.168.43.52/ota/board_test" >> /tmp/${version}-pellcorp/ota_info
-    sudo cp /tmp/${version}-pellcorp/ota_info /tmp/${version}-pellcorp/squashfs-root/etc/
+    echo "ota_version=${version}" > /tmp/${version}-Crumflight/ota_info
+    echo "ota_board_name=${board_name}" >> /tmp/${version}-Crumflight/ota_info
+    echo "ota_compile_time=$(date '+%Y %m.%d %H:%M:%S')" >> /tmp/${version}-Crumflight/ota_info
+    echo "ota_site=http://192.168.43.52/ota/board_test" >> /tmp/${version}-Crumflight/ota_info
+    sudo cp /tmp/${version}-Crumflight/ota_info /tmp/${version}-Crumflight/squashfs-root/etc/
 }
 
 function customise_rootfs() {
     write_ota_info
-    sudo cp $CURRENT_DIR/etc/init.d/* /tmp/${version}-pellcorp/squashfs-root/etc/init.d/
+    sudo cp $CURRENT_DIR/etc/init.d/* /tmp/${version}-Crumflight/squashfs-root/etc/init.d/
 }
 
 function update_rootfs() {
-    pushd /tmp/${version}-pellcorp/ > /dev/null
+    pushd /tmp/${version}-Crumflight/ > /dev/null
     sudo unsquashfs orig_rootfs.squashfs 
     customise_rootfs
     sudo mksquashfs squashfs-root rootfs.squashfs || exit $?
@@ -62,52 +62,52 @@ fi
 
 7z x /tmp/$old_image_name -p"$FIRMWARE_PASSWORD" -o/tmp
 
-if [ -d /tmp/${version}-pellcorp ]; then
-    sudo rm -rf /tmp/${version}-pellcorp
+if [ -d /tmp/${version}-Crumflight ]; then
+    sudo rm -rf /tmp/${version}-Crumflight
 fi
-mkdir -p /tmp/${version}-pellcorp/$directory/$sub_directory
+mkdir -p /tmp/${version}-Crumflight/$directory/$sub_directory
 
-cat /tmp/$old_directory/$old_sub_directory/rootfs.squashfs.* > /tmp/${version}-pellcorp/orig_rootfs.squashfs
-orig_rootfs_md5=$(md5sum /tmp/${version}-pellcorp/orig_rootfs.squashfs | awk '{print $1}')
-orig_rootfs_size=$(stat -c%s /tmp/${version}-pellcorp/orig_rootfs.squashfs)
+cat /tmp/$old_directory/$old_sub_directory/rootfs.squashfs.* > /tmp/${version}-Crumflight/orig_rootfs.squashfs
+orig_rootfs_md5=$(md5sum /tmp/${version}-Crumflight/orig_rootfs.squashfs | awk '{print $1}')
+orig_rootfs_size=$(stat -c%s /tmp/${version}-Crumflight/orig_rootfs.squashfs)
 
 # do the changes here
 update_rootfs || exit $?
 
-rootfs_md5=$(md5sum /tmp/${version}-pellcorp/rootfs.squashfs | awk '{print $1}')
-rootfs_size=$(stat -c%s /tmp/${version}-pellcorp/rootfs.squashfs)
+rootfs_md5=$(md5sum /tmp/${version}-Crumflight/rootfs.squashfs | awk '{print $1}')
+rootfs_size=$(stat -c%s /tmp/${version}-Crumflight/rootfs.squashfs)
 
-echo "current_version=$version" > /tmp/${version}-pellcorp/$directory/ota_config.in
-echo "" > /tmp/${version}-pellcorp/$directory/$sub_directory/ota_v${version}.ok
+echo "current_version=$version" > /tmp/${version}-Crumflight/$directory/ota_config.in
+echo "" > /tmp/${version}-Crumflight/$directory/$sub_directory/ota_v${version}.ok
 
-cp /tmp/$old_directory/$old_sub_directory/ota_update.in /tmp/${version}-pellcorp/$directory/$sub_directory/
-cp /tmp/$old_directory/$old_sub_directory/ota_md5_xImage* /tmp/${version}-pellcorp/$directory/$sub_directory/
-cp /tmp/$old_directory/$old_sub_directory/ota_md5_zero.bin* /tmp/${version}-pellcorp/$directory/$sub_directory/
-cp /tmp/$old_directory/$old_sub_directory/zero.bin.* /tmp/${version}-pellcorp/$directory/$sub_directory/
-cp /tmp/$old_directory/$old_sub_directory/xImage.* /tmp/${version}-pellcorp/$directory/$sub_directory/
+cp /tmp/$old_directory/$old_sub_directory/ota_update.in /tmp/${version}-Crumflight/$directory/$sub_directory/
+cp /tmp/$old_directory/$old_sub_directory/ota_md5_xImage* /tmp/${version}-Crumflight/$directory/$sub_directory/
+cp /tmp/$old_directory/$old_sub_directory/ota_md5_zero.bin* /tmp/${version}-Crumflight/$directory/$sub_directory/
+cp /tmp/$old_directory/$old_sub_directory/zero.bin.* /tmp/${version}-Crumflight/$directory/$sub_directory/
+cp /tmp/$old_directory/$old_sub_directory/xImage.* /tmp/${version}-Crumflight/$directory/$sub_directory/
 
-pushd /tmp/${version}-pellcorp/$directory/$sub_directory > /dev/null
-split -d -b 1048576 -a 4 /tmp/${version}-pellcorp/rootfs.squashfs rootfs.squashfs.
+pushd /tmp/${version}-Crumflight/$directory/$sub_directory > /dev/null
+split -d -b 1048576 -a 4 /tmp/${version}-Crumflight/rootfs.squashfs rootfs.squashfs.
 popd > /dev/null
 
 part_md5=
-for i in $(ls /tmp/${version}-pellcorp/$directory/$sub_directory/rootfs.squashfs.*); do
+for i in $(ls /tmp/${version}-Crumflight/$directory/$sub_directory/rootfs.squashfs.*); do
     file=$(basename $i)
     if [ -z "$part_md5" ]; then
         id=$rootfs_md5
     else
         id=$part_md5
     fi
-    mv "/tmp/${version}-pellcorp/$directory/$sub_directory/$file" "/tmp/${version}-pellcorp/$directory/$sub_directory/${file}.${id}"
-    part_md5=$(md5sum /tmp/${version}-pellcorp/$directory/$sub_directory/${file}.${id} | awk '{print $1}')
-    echo "$part_md5" >> "/tmp/${version}-pellcorp/$directory/$sub_directory/ota_md5_rootfs.squashfs.${rootfs_md5}"
+    mv "/tmp/${version}-Crumflight/$directory/$sub_directory/$file" "/tmp/${version}-Crumflight/$directory/$sub_directory/${file}.${id}"
+    part_md5=$(md5sum /tmp/${version}-Crumflight/$directory/$sub_directory/${file}.${id} | awk '{print $1}')
+    echo "$part_md5" >> "/tmp/${version}-Crumflight/$directory/$sub_directory/ota_md5_rootfs.squashfs.${rootfs_md5}"
 done
 
-sed -i "s/ota_version=$CREALITY_VERSION/ota_version=$version/g" /tmp/${version}-pellcorp/$directory/$sub_directory/ota_update.in
-sed -i "s/img_md5=$orig_rootfs_md5/img_md5=$rootfs_md5/g" /tmp/${version}-pellcorp/$directory/$sub_directory/ota_update.in
-sed -i "s/img_size=$orig_rootfs_size/img_size=$rootfs_size/g" /tmp/${version}-pellcorp/$directory/$sub_directory/ota_update.in
+sed -i "s/ota_version=$CREALITY_VERSION/ota_version=$version/g" /tmp/${version}-Crumflight/$directory/$sub_directory/ota_update.in
+sed -i "s/img_md5=$orig_rootfs_md5/img_md5=$rootfs_md5/g" /tmp/${version}-Crumflight/$directory/$sub_directory/ota_update.in
+sed -i "s/img_size=$orig_rootfs_size/img_size=$rootfs_size/g" /tmp/${version}-Crumflight/$directory/$sub_directory/ota_update.in
 
-pushd /tmp/${version}-pellcorp/ > /dev/null
+pushd /tmp/${version}-Crumflight/ > /dev/null
 7z a ${image_name}.7z -p"$FIRMWARE_PASSWORD" $directory
 mv ${image_name}.7z ${image_name}
 popd > /dev/null

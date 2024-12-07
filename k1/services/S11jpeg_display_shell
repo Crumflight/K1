@@ -2,7 +2,7 @@
 
 case "$1" in
     start)
-        cmd_jpeg_display /usr/data/pellcorp/k1/black.jpg &
+        cmd_jpeg_display /usr/data/Crumflight/k1/black.jpg &
     ;;
     *)
         exit 1

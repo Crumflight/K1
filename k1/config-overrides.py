@@ -10,7 +10,7 @@ import argparse
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Pellcorp Config Overrides')
+    parser = argparse.ArgumentParser(description='Crumflight Config Overrides')
     parser.add_argument("-o", "--original", type=str, required=True)
     parser.add_argument("-u", "--updated", type=str, required=True)
     parser.add_argument("-v", "--overrides", type=str, required=True)

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PREVIOUS_IP_ADDRESS=$(cat /usr/data/pellcorp.ipaddress 2> /dev/null)
+PREVIOUS_IP_ADDRESS=$(cat /usr/data/Crumflight.ipaddress 2> /dev/null)
 
 if [ -f /usr/data/ipaddress.log ]; then
   rm /usr/data/ipaddress.log
@@ -36,7 +36,7 @@ if [ -z "$PREVIOUS_IP_ADDRESS" ] || [ "$PREVIOUS_IP_ADDRESS" != "$CURRENT_IP_ADD
   echo "Current IP Address is $CURRENT_IP_ADDRESS" | tee -a /usr/data/ipaddress.log
 
   echo "Updating webcam.conf IP Address to $CURRENT_IP_ADDRESS" | tee -a /usr/data/ipaddress.log
-  echo "$CURRENT_IP_ADDRESS" > /usr/data/pellcorp.ipaddress
+  echo "$CURRENT_IP_ADDRESS" > /usr/data/Crumflight.ipaddress
   sed -i '/_url/d' /usr/data/printer_data/config/webcam.conf
   echo "stream_url: http://$CURRENT_IP_ADDRESS:8080/?action=stream" >> /usr/data/printer_data/config/webcam.conf
   echo "snapshot_url: http://$CURRENT_IP_ADDRESS:8080/?action=snapshot" >> /usr/data/printer_data/config/webcam.conf

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /usr/data/pellcorp
+cd /usr/data/Crumflight
 git fetch
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)

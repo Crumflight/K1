@@ -2,7 +2,7 @@
 
 #
 # This is a simple utility to enable some very basic validation of the 
-# /usr/data/pellcorp/k1/fw/K1 files to make sure they include the 
+# /usr/data/Crumflight/k1/fw/K1 files to make sure they include the 
 # K1_Series_Klipper Version header and CRC16, which on some MCU
 # can cause a soft brick which is very inconvenient.
 #

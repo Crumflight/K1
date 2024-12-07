@@ -29,10 +29,10 @@ if [ -d /usr/data/helper-script ] || [ -f /usr/data/fluidd.sh ] || [ -f /usr/dat
     exit 1
 fi
 
-# everything else in the script assumes its cloned to /usr/data/pellcorp
+# everything else in the script assumes its cloned to /usr/data/Crumflight
 # so we must verify this or shit goes wrong
-if [ "$(dirname $(readlink -f $0))" != "/usr/data/pellcorp/k1" ]; then
-  >&2 echo "ERROR: This git repo must be cloned to /usr/data/pellcorp"
+if [ "$(dirname $(readlink -f $0))" != "/usr/data/Crumflight/k1" ]; then
+  >&2 echo "ERROR: This git repo must be cloned to /usr/data/Crumflight"
   exit 1
 fi
 
@@ -63,11 +63,11 @@ function update_klipper() {
       sync
   fi
   if [ -d /usr/data/beacon-klipper ]; then
-      /usr/data/pellcorp/k1/beacon-install.sh || return $?
+      /usr/data/Crumflight/k1/beacon-install.sh || return $?
       sync
   fi
   /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || return $?
-  /usr/data/pellcorp/k1/tools/check-firmware.sh --status
+  /usr/data/Crumflight/k1/tools/check-firmware.sh --status
   if [ $? -eq 0 ]; then
       /etc/init.d/S55klipper_service restart
   fi
@@ -76,12 +76,12 @@ function update_klipper() {
 
 # special mode to update the repo only
 if [ "$1" = "--update-repo" ] || [ "$1" = "--update-branch" ]; then
-    update_repo /usr/data/pellcorp
+    update_repo /usr/data/Crumflight
     exit $?
 elif [ "$1" = "--branch" ] && [ -n "$2" ]; then # convenience for testing new features
-    update_repo /usr/data/pellcorp || exit $?
-    cd /usr/data/pellcorp && git switch $2 && cd - > /dev/null
-    update_repo /usr/data/pellcorp
+    update_repo /usr/data/Crumflight || exit $?
+    cd /usr/data/Crumflight && git switch $2 && cd - > /dev/null
+    update_repo /usr/data/Crumflight
     exit $?
 elif [ "$1" = "--klipper-branch" ] && [ -n "$2" ]; then # convenience for testing new features
     update_repo /usr/data/klipper || exit $?
@@ -96,15 +96,15 @@ elif [ "$1" = "--klipper-repo" ] && [ -n "$2" ]; then # convenience for testing 
         remote_repo=$(git remote get-url origin | awk -F '/' '{print $NF}' | sed 's/.git//g')
         cd - > /dev/null
         if [ "$remote_repo" != "$klipper_repo" ]; then
-            echo "INFO: Switching klipper from pellcorp/$remote_repo to pellcorp/${klipper_repo} ..."
+            echo "INFO: Switching klipper from Crumflight/$remote_repo to Crumflight/${klipper_repo} ..."
             rm -rf /usr/data/klipper
 
-            echo "$klipper_repo" > /usr/data/pellcorp.klipper
+            echo "$klipper_repo" > /usr/data/Crumflight.klipper
         fi
     fi
 
     if [ ! -d /usr/data/klipper ]; then
-        git clone https://github.com/pellcorp/${klipper_repo}.git /usr/data/klipper || exit $?
+        git clone https://github.com/Crumflight/${klipper_repo}.git /usr/data/klipper || exit $?
     else
         update_repo /usr/data/klipper || exit $?
     fi
@@ -120,16 +120,16 @@ fi
 # kill pip cache to free up overlayfs
 rm -rf /root/.cache
 
-cp /usr/data/pellcorp/k1/services/S58factoryreset /etc/init.d || exit $?
-cp /usr/data/pellcorp/k1/services/S50dropbear /etc/init.d/ || exit $?
+cp /usr/data/Crumflight/k1/services/S58factoryreset /etc/init.d || exit $?
+cp /usr/data/Crumflight/k1/services/S50dropbear /etc/init.d/ || exit $?
 sync
 
 # for k1 the installed curl does not do ssl, so we replace it first
 # and we can then make use of it going forward
-cp /usr/data/pellcorp/k1/tools/curl /usr/bin/curl
+cp /usr/data/Crumflight/k1/tools/curl /usr/bin/curl
 sync
 
-CONFIG_HELPER="/usr/data/pellcorp/k1/config-helper.py"
+CONFIG_HELPER="/usr/data/Crumflight/k1/config-helper.py"
 
 install_config_updater() {
     python3 -c 'from configupdater import ConfigUpdater' 2> /dev/null
@@ -145,9 +145,9 @@ install_config_updater() {
         fi
     fi
 
-    # old pellcorp-env not required anymore
-    if [ -d /usr/data/pellcorp-env/ ]; then
-        rm -rf /usr/data/pellcorp-env/
+    # old Crumflight-env not required anymore
+    if [ -d /usr/data/Crumflight-env/ ]; then
+        rm -rf /usr/data/Crumflight-env/
     fi
     sync
 }
@@ -218,19 +218,19 @@ disable_creality_services() {
 }
 
 install_boot_display() {
-  grep -q "boot-display" /usr/data/pellcorp.done
+  grep -q "boot-display" /usr/data/Crumflight.done
   if [ $? -ne 0 ]; then
     echo
     echo "INFO: Installing custom boot display ..."
 
     # shamelessly stolen from https://github.com/Guilouz/Creality-Helper-Script/blob/main/scripts/custom_boot_display.sh
     rm -rf /etc/boot-display/part0
-    cp /usr/data/pellcorp/k1/boot-display.conf /etc/boot-display/
-    cp /usr/data/pellcorp/k1/services/S11jpeg_display_shell /etc/init.d/
+    cp /usr/data/Crumflight/k1/boot-display.conf /etc/boot-display/
+    cp /usr/data/Crumflight/k1/services/S11jpeg_display_shell /etc/init.d/
     mkdir -p /usr/data/boot-display
-    tar -zxf "/usr/data/pellcorp/k1/boot-display.tar.gz" -C /usr/data/boot-display
+    tar -zxf "/usr/data/Crumflight/k1/boot-display.tar.gz" -C /usr/data/boot-display
     ln -s /usr/data/boot-display/part0 /etc/boot-display/
-    echo "boot-display" >> /usr/data/pellcorp.done
+    echo "boot-display" >> /usr/data/Crumflight.done
     sync
     return 1
   fi
@@ -240,7 +240,7 @@ install_boot_display() {
 install_webcam() {
     local mode=$1
     
-    grep -q "webcam" /usr/data/pellcorp.done
+    grep -q "webcam" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] || [ ! -f /opt/bin/mjpg_streamer ]; then
             echo
@@ -264,18 +264,18 @@ install_webcam() {
 
         # auto_uvc.sh is responsible for starting the web cam_app
         [ -f /usr/bin/auto_uvc.sh ] && rm /usr/bin/auto_uvc.sh
-        cp /usr/data/pellcorp/k1/files/auto_uvc.sh /usr/bin/
+        cp /usr/data/Crumflight/k1/files/auto_uvc.sh /usr/bin/
         chmod 777 /usr/bin/auto_uvc.sh
 
-        cp /usr/data/pellcorp/k1/services/S50webcam /etc/init.d/
+        cp /usr/data/Crumflight/k1/services/S50webcam /etc/init.d/
         /etc/init.d/S50webcam start
 
-        if [ -f /usr/data/pellcorp.ipaddress ]; then
-          rm /usr/data/pellcorp.ipaddress
+        if [ -f /usr/data/Crumflight.ipaddress ]; then
+          rm /usr/data/Crumflight.ipaddress
         fi
-        cp /usr/data/pellcorp/k1/webcam.conf /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/webcam.conf /usr/data/printer_data/config/ || exit $?
 
-        echo "webcam" >> /usr/data/pellcorp.done
+        echo "webcam" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -285,7 +285,7 @@ install_webcam() {
 install_moonraker() {
     local mode=$1
 
-    grep -q "moonraker" /usr/data/pellcorp.done
+    grep -q "moonraker" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         
@@ -336,7 +336,7 @@ install_moonraker() {
         fi
 
         if [ ! -d /usr/data/moonraker-env ]; then
-            tar -zxf /usr/data/pellcorp/k1/moonraker-env.tar.gz -C /usr/data/ || exit $?
+            tar -zxf /usr/data/Crumflight/k1/moonraker-env.tar.gz -C /usr/data/ || exit $?
         fi
 
         if [ "$mode" != "update" ] || [ ! -f /opt/bin/ffmpeg ]; then
@@ -348,30 +348,30 @@ install_moonraker() {
 
         # an existing bug where the moonraker secrets was not correctly copied
         if [ ! -f /usr/data/printer_data/moonraker.secrets ]; then
-            cp /usr/data/pellcorp/k1/moonraker.secrets /usr/data/printer_data/
+            cp /usr/data/Crumflight/k1/moonraker.secrets /usr/data/printer_data/
         fi
 
-        ln -sf /usr/data/pellcorp/k1/tools/supervisorctl /usr/bin/ || exit $?
-        cp /usr/data/pellcorp/k1/services/S56moonraker_service /etc/init.d/ || exit $?
-        cp /usr/data/pellcorp/k1/moonraker.conf /usr/data/printer_data/config/ || exit $?
-        ln -sf /usr/data/pellcorp/k1/moonraker.asvc /usr/data/printer_data/ || exit $?
+        ln -sf /usr/data/Crumflight/k1/tools/supervisorctl /usr/bin/ || exit $?
+        cp /usr/data/Crumflight/k1/services/S56moonraker_service /etc/init.d/ || exit $?
+        cp /usr/data/Crumflight/k1/moonraker.conf /usr/data/printer_data/config/ || exit $?
+        ln -sf /usr/data/Crumflight/k1/moonraker.asvc /usr/data/printer_data/ || exit $?
 
         ln -sf /usr/data/moonraker-timelapse/component/timelapse.py /usr/data/moonraker/moonraker/components/ || exit $?
         if ! grep -q "moonraker/components/timelapse.py" "/usr/data/moonraker/.git/info/exclude"; then
             echo "moonraker/components/timelapse.py" >> "/usr/data/moonraker/.git/info/exclude"
         fi
         ln -sf /usr/data/moonraker-timelapse/klipper_macro/timelapse.cfg /usr/data/printer_data/config/ || exit $?
-        cp /usr/data/pellcorp/k1/timelapse.conf /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/timelapse.conf /usr/data/printer_data/config/ || exit $?
 
         # after an initial install do not overwrite notifier.conf or moonraker.secrets
         if [ ! -f /usr/data/printer_data/config/notifier.conf ]; then
-            cp /usr/data/pellcorp/k1/notifier.conf /usr/data/printer_data/config/ || exit $?
+            cp /usr/data/Crumflight/k1/notifier.conf /usr/data/printer_data/config/ || exit $?
         fi
         if [ ! -f /usr/data/printer_data/moonraker.secrets ]; then
-            cp /usr/data/pellcorp/k1/moonraker.secrets /usr/data/printer_data/ || exit $?
+            cp /usr/data/Crumflight/k1/moonraker.secrets /usr/data/printer_data/ || exit $?
         fi
 
-        echo "moonraker" >> /usr/data/pellcorp.done
+        echo "moonraker" >> /usr/data/Crumflight.done
         sync
 
         # means nginx and moonraker need to be restarted
@@ -383,7 +383,7 @@ install_moonraker() {
 install_nginx() {
     local mode=$1
 
-    grep -q "nginx" /usr/data/pellcorp.done
+    grep -q "nginx" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         default_ui=fluidd
         if [ -f /usr/data/nginx/nginx/sites/mainsail ]; then
@@ -404,14 +404,14 @@ install_nginx() {
             echo
             echo "INFO: Installing nginx ..."
 
-            tar -zxf /usr/data/pellcorp/k1/nginx.tar.gz -C /usr/data/ || exit $?
+            tar -zxf /usr/data/Crumflight/k1/nginx.tar.gz -C /usr/data/ || exit $?
         fi
 
         echo "INFO: Updating nginx config ..."
-        cp /usr/data/pellcorp/k1/nginx.conf /usr/data/nginx/nginx/ || exit $?
+        cp /usr/data/Crumflight/k1/nginx.conf /usr/data/nginx/nginx/ || exit $?
         mkdir -p /usr/data/nginx/nginx/sites/
-        cp /usr/data/pellcorp/k1/nginx/fluidd /usr/data/nginx/nginx/sites/ || exit $?
-        cp /usr/data/pellcorp/k1/nginx/mainsail /usr/data/nginx/nginx/sites/ || exit $?
+        cp /usr/data/Crumflight/k1/nginx/fluidd /usr/data/nginx/nginx/sites/ || exit $?
+        cp /usr/data/Crumflight/k1/nginx/mainsail /usr/data/nginx/nginx/sites/ || exit $?
 
         if [ "$default_ui" = "mainsail" ]; then
           echo "INFO: Restoring mainsail as default UI"
@@ -419,9 +419,9 @@ install_nginx() {
           sed -i 's/.*#listen 80 default_server;/    listen 80 default_server;/g' /usr/data/nginx/nginx/sites/mainsail || exit $?
         fi
 
-        cp /usr/data/pellcorp/k1/services/S50nginx_service /etc/init.d/ || exit $?
+        cp /usr/data/Crumflight/k1/services/S50nginx_service /etc/init.d/ || exit $?
 
-        echo "nginx" >> /usr/data/pellcorp.done
+        echo "nginx" >> /usr/data/Crumflight.done
         sync
 
         # means nginx needs to be restarted
@@ -433,7 +433,7 @@ install_nginx() {
 install_fluidd() {
     local mode=$1
 
-    grep -q "fluidd" /usr/data/pellcorp.done
+    grep -q "fluidd" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/fluidd ]; then
             rm -rf /usr/data/fluidd
@@ -471,7 +471,7 @@ install_fluidd() {
 
         $CONFIG_HELPER --add-include "fluidd.cfg" || exit $?
 
-        echo "fluidd" >> /usr/data/pellcorp.done
+        echo "fluidd" >> /usr/data/Crumflight.done
         sync
 
         # means nginx needs to be restarted
@@ -483,7 +483,7 @@ install_fluidd() {
 install_mainsail() {
     local mode=$1
 
-    grep -q "mainsail" /usr/data/pellcorp.done
+    grep -q "mainsail" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/mainsail ]; then
             rm -rf /usr/data/mainsail
@@ -504,7 +504,7 @@ install_mainsail() {
         # the mainsail and fluidd client.cfg are exactly the same
         [ -f /usr/data/printer_data/config/mainsail.cfg ] && rm /usr/data/printer_data/config/mainsail.cfg
 
-        echo "mainsail" >> /usr/data/pellcorp.done
+        echo "mainsail" >> /usr/data/Crumflight.done
         sync
 
         # means nginx needs to be restarted
@@ -516,7 +516,7 @@ install_mainsail() {
 install_kamp() {
     local mode=$1
 
-    grep -q "KAMP" /usr/data/pellcorp.done
+    grep -q "KAMP" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/KAMP ]; then
             rm -rf /usr/data/KAMP
@@ -527,14 +527,8 @@ install_kamp() {
             echo "INFO: Installing KAMP ..."
             [ -d /usr/data/KAMP ] && rm -rf /usr/data/KAMP
 
-            if [ "$AF_GIT_CLONE" = "ssh" ]; then
-                export GIT_SSH_IDENTITY=KAMP
-                export GIT_SSH=/usr/data/pellcorp/k1/ssh/git-ssh.sh
-                git clone git@github.com:pellcorp/Klipper-Adaptive-Meshing-Purging.git /usr/data/KAMP || exit $?
-                cd /usr/data/KAMP && git remote set-url origin https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git && cd - > /dev/null
-            else
-                git clone https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git /usr/data/KAMP || exit $?
-            fi
+            # Always use HTTPS for cloning
+            git clone https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git /usr/data/KAMP || exit $?
         fi
 
         echo "INFO: Updating KAMP config ..."
@@ -550,9 +544,9 @@ install_kamp() {
         # SMART_PARK
         sed -i 's:#\[include ./KAMP/Smart_Park.cfg\]:\[include ./KAMP/Smart_Park.cfg\]:g' /usr/data/printer_data/config/KAMP_Settings.cfg
 
-        cp /usr/data/printer_data/config/KAMP_Settings.cfg /usr/data/pellcorp-backups/
+        cp /usr/data/printer_data/config/KAMP_Settings.cfg /usr/data/Crumflight-backups/
 
-        echo "KAMP" >> /usr/data/pellcorp.done
+        echo "KAMP" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -565,12 +559,12 @@ install_klipper() {
     local mode=$1
     local probe=$2
 
-    grep -q "klipper" /usr/data/pellcorp.done
+    grep -q "klipper" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
 
         klipper_repo=klipper
-        # pellcorp/k1-carto-klipper is a version of klipper that is the same as k1-klipper/klipper k1_carto branch
+        # Crumflight/k1-carto-klipper is a version of klipper that is the same as k1-klipper/klipper k1_carto branch
         if [ "$probe" = "cartographer" ]; then
             klipper_repo=k1-carto-klipper
         fi
@@ -581,36 +575,26 @@ install_klipper() {
             rm -rf /usr/data/klipper
 
             # a reinstall should reset the choice of what klipper to run
-            if [ -f /usr/data/pellcorp.klipper ]; then
-              rm /usr/data/pellcorp.klipper
+            if [ -f /usr/data/Crumflight.klipper ]; then
+              rm /usr/data/Crumflight.klipper
             fi
         fi
 
         # switch to required klipper version except where there is a flag file indicating we explicitly
         # decided to use a particular version of klipper
-        if [ -d /usr/data/klipper/.git ] && [ ! -f /usr/data/pellcorp.klipper ]; then
+        if [ -d /usr/data/klipper/.git ] && [ ! -f /usr/data/Crumflight.klipper ]; then
             cd /usr/data/klipper/
             remote_repo=$(git remote get-url origin | awk -F '/' '{print $NF}' | sed 's/.git//g')
             cd - > /dev/null
             if [ "$remote_repo" != "$klipper_repo" ]; then
-                echo "INFO: Forcing Klipper repo to be switched to pellcorp/${klipper_repo}"
+                echo "INFO: Forcing Klipper repo to be switched to Crumflight/${klipper_repo}"
                 rm -rf /usr/data/klipper/
             fi
         fi
 
         if [ ! -d /usr/data/klipper/.git ]; then
             echo "INFO: Installing ${klipper_repo} ..."
-
-            if [ "$AF_GIT_CLONE" = "ssh" ]; then
-                export GIT_SSH_IDENTITY=${klipper_repo}
-                export GIT_SSH=/usr/data/pellcorp/k1/ssh/git-ssh.sh
-                git clone git@github.com:pellcorp/${klipper_repo}.git /usr/data/klipper || exit $?
-                # reset the origin url to make moonraker happy
-                cd /usr/data/klipper && git remote set-url origin https://github.com/pellcorp/${klipper_repo}.git && cd - > /dev/null
-            else
-                git clone https://github.com/pellcorp/${klipper_repo}.git /usr/data/klipper || exit $?
-            fi
-            [ -d /usr/share/klipper ] && rm -rf /usr/share/klipper
+            git clone https://github.com/Crumflight/${klipper_repo}.git /usr/data/klipper || exit $?
         fi
 
         echo "INFO: Updating klipper config ..."
@@ -622,13 +606,13 @@ install_klipper() {
         # for scripts like ~/klipper/scripts, a soft link makes things a little bit easier
         ln -sf /usr/data/klipper/ /root
 
-        cp /usr/data/pellcorp/k1/services/S55klipper_service /etc/init.d/ || exit $?
+        cp /usr/data/Crumflight/k1/services/S55klipper_service /etc/init.d/ || exit $?
 
-        cp /usr/data/pellcorp/k1/services/S13mcu_update /etc/init.d/ || exit $?
+        cp /usr/data/Crumflight/k1/services/S13mcu_update /etc/init.d/ || exit $?
 
-        cp /usr/data/pellcorp/k1/sensorless.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/sensorless.cfg /usr/data/printer_data/config/ || exit $?
 
-        cp /usr/data/pellcorp/k1/useful_macros.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/useful_macros.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "useful_macros.cfg" || exit $?
 
         # the klipper_mcu is not even used, so just get rid of it
@@ -664,10 +648,10 @@ install_klipper() {
             rm /usr/data/printer_data/config/factory_printer.cfg
         fi
 
-        cp /usr/data/pellcorp/k1/start_end.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/start_end.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "start_end.cfg" || exit $?
 
-        cp /usr/data/pellcorp/k1/fan_control.cfg /usr/data/printer_data/config || exit $?
+        cp /usr/data/Crumflight/k1/fan_control.cfg /usr/data/printer_data/config || exit $?
         $CONFIG_HELPER --add-include "fan_control.cfg" || exit $?
 
         $CONFIG_HELPER --remove-section "output_pin fan0" || exit $?
@@ -706,7 +690,7 @@ install_klipper() {
         # start and end print and warp stabilisation if needed
         $CONFIG_HELPER --remove-section "idle_timeout"
 
-        echo "klipper" >> /usr/data/pellcorp.done
+        echo "klipper" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -718,7 +702,7 @@ install_klipper() {
 install_guppyscreen() {
     local mode=$1
 
-    grep -q "guppyscreen" /usr/data/pellcorp.done
+    grep -q "guppyscreen" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/guppyscreen ]; then
             if [ -f /etc/init.d/S99guppyscreen ]; then
@@ -738,8 +722,8 @@ install_guppyscreen() {
         fi
 
         echo "INFO: Updating guppyscreen config ..."
-        cp /usr/data/pellcorp/k1/services/S99guppyscreen /etc/init.d/ || exit $?
-        cp /usr/data/pellcorp/k1/guppyconfig.json /usr/data/guppyscreen || exit $?
+        cp /usr/data/Crumflight/k1/services/S99guppyscreen /etc/init.d/ || exit $?
+        cp /usr/data/Crumflight/k1/guppyconfig.json /usr/data/guppyscreen || exit $?
 
         if [ ! -d "/usr/lib/python3.8/site-packages/matplotlib-2.2.3-py3.8.egg-info" ]; then
             echo "WARNING: Not replacing mathplotlib ft2font module. PSD graphs might not work!"
@@ -757,14 +741,14 @@ install_guppyscreen() {
         # get rid of the old guppyscreen config
         [ -d /usr/data/printer_data/config/GuppyScreen ] && rm -rf /usr/data/printer_data/config/GuppyScreen
 
-        cp /usr/data/pellcorp/k1/guppyscreen.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/guppyscreen.cfg /usr/data/printer_data/config/ || exit $?
 
         # a single local guppyscreen.cfg which references the python files from /usr/data/guppyscreen instead
         $CONFIG_HELPER --remove-include "GuppyScreen/*.cfg" || exit $?
 
         $CONFIG_HELPER --add-include "guppyscreen.cfg" || exit $?
 
-        echo "guppyscreen" >> /usr/data/pellcorp.done
+        echo "guppyscreen" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -774,7 +758,7 @@ install_guppyscreen() {
 }
 
 setup_probe() {
-    grep -q "probe" /usr/data/pellcorp.done
+    grep -q "probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up generic probe config ..."
@@ -783,7 +767,7 @@ setup_probe() {
         $CONFIG_HELPER --remove-section-entry "stepper_z" "position_endstop" || exit $?
         $CONFIG_HELPER --replace-section-entry "stepper_z" "endstop_pin" "probe:z_virtual_endstop" || exit $?
 
-        cp /usr/data/pellcorp/k1/quickstart.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/quickstart.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "quickstart.cfg" || exit $?
 
         # because we are using force move with 3mm, as a safety feature we will lower the position max
@@ -792,7 +776,7 @@ setup_probe() {
         position_max=$((position_max-3))
         $CONFIG_HELPER --replace-section-entry "stepper_z" "position_max" "$position_max" || exit $?
 
-        echo "probe" >> /usr/data/pellcorp.done
+        echo "probe" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -804,7 +788,7 @@ setup_probe() {
 install_cartographer_klipper() {
     local mode=$1
 
-    grep -q "cartographer-klipper" /usr/data/pellcorp.done
+    grep -q "cartographer-klipper" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/cartographer-klipper ]; then
             rm -rf /usr/data/cartographer-klipper
@@ -813,13 +797,13 @@ install_cartographer_klipper() {
         if [ ! -d /usr/data/cartographer-klipper ]; then
             echo
             echo "INFO: Installing cartographer-klipper ..."
-            git clone https://github.com/pellcorp/cartographer-klipper.git /usr/data/cartographer-klipper || exit $?
+            git clone https://github.com/Crumflight/cartographer-klipper.git /usr/data/cartographer-klipper || exit $?
         else
           cd /usr/data/cartographer-klipper
           REMOTE_URL=$(git remote get-url origin)
-          if [ "$REMOTE_URL" != "https://github.com/pellcorp/cartographer-klipper.git" ]; then
-            echo "INFO: Switching cartographer-klipper to pellcorp fork"
-            git remote set-url origin https://github.com/pellcorp/cartographer-klipper.git
+          if [ "$REMOTE_URL" != "https://github.com/Crumflight/cartographer-klipper.git" ]; then
+            echo "INFO: Switching cartographer-klipper to Crumflight fork"
+            git remote set-url origin https://github.com/Crumflight/cartographer-klipper.git
             git fetch origin
           fi
         fi
@@ -830,7 +814,7 @@ install_cartographer_klipper() {
         bash /usr/data/cartographer-klipper/install.sh || exit $?
         /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || exit $?
 
-        echo "cartographer-klipper" >> /usr/data/pellcorp.done
+        echo "cartographer-klipper" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -840,7 +824,7 @@ install_cartographer_klipper() {
 install_beacon_klipper() {
     local mode=$1
 
-    grep -q "beacon-klipper" /usr/data/pellcorp.done
+    grep -q "beacon-klipper" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         if [ "$mode" != "update" ] && [ -d /usr/data/beacon-klipper ]; then
             rm -rf /usr/data/beacon-klipper
@@ -853,11 +837,11 @@ install_beacon_klipper() {
         fi
 
         # FIXME - maybe beacon will accept a PR to make their installer work on k1
-        /usr/data/pellcorp/k1/beacon-install.sh
+        /usr/data/Crumflight/k1/beacon-install.sh
 
         /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || exit $?
 
-        echo "beacon-klipper" >> /usr/data/pellcorp.done
+        echo "beacon-klipper" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -888,7 +872,7 @@ cleanup_probe() {
 }
 
 setup_bltouch() {
-    grep -q "bltouch-probe" /usr/data/pellcorp.done
+    grep -q "bltouch-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up bltouch/crtouch/3dtouch ..."
@@ -903,12 +887,12 @@ setup_bltouch() {
           rm /usr/data/printer_data/config/bltouch.cfg
         fi
         $CONFIG_HELPER --remove-include "bltouch.cfg" || exit $?
-        $CONFIG_HELPER --overrides "/usr/data/pellcorp/k1/bltouch.cfg" || exit $?
+        $CONFIG_HELPER --overrides "/usr/data/Crumflight/k1/bltouch.cfg" || exit $?
 
-        cp /usr/data/pellcorp/k1/bltouch_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/bltouch_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "bltouch_macro.cfg" || exit $?
 
-        cp /usr/data/pellcorp/k1/bltouch-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/bltouch-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "bltouch-${model}.cfg" || exit $?
 
         # because the model sits out the back we do need to set position max back
@@ -916,7 +900,7 @@ setup_bltouch() {
         position_max=$((position_max-17))
         $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-        echo "bltouch-probe" >> /usr/data/pellcorp.done
+        echo "bltouch-probe" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -926,7 +910,7 @@ setup_bltouch() {
 }
 
 setup_microprobe() {
-    grep -q "microprobe-probe" /usr/data/pellcorp.done
+    grep -q "microprobe-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up microprobe ..."
@@ -941,15 +925,15 @@ setup_microprobe() {
           rm /usr/data/printer_data/config/microprobe.cfg
         fi
         $CONFIG_HELPER --remove-include "microprobe.cfg" || exit $?
-        $CONFIG_HELPER --overrides "/usr/data/pellcorp/k1/microprobe.cfg" || exit $?
+        $CONFIG_HELPER --overrides "/usr/data/Crumflight/k1/microprobe.cfg" || exit $?
 
-        cp /usr/data/pellcorp/k1/microprobe_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/microprobe_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "microprobe_macro.cfg" || exit $?
 
-        cp /usr/data/pellcorp/k1/microprobe-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/microprobe-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "microprobe-${model}.cfg" || exit $?
 
-        echo "microprobe-probe" >> /usr/data/pellcorp.done
+        echo "microprobe-probe" >> /usr/data/Crumflight.done
         sync
 
         # means klipper needs to be restarted
@@ -959,7 +943,7 @@ setup_microprobe() {
 }
 
 setup_cartographer() {
-    grep -q "cartographer-probe" /usr/data/pellcorp.done
+    grep -q "cartographer-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up cartographer ..."
@@ -970,15 +954,15 @@ setup_cartographer() {
         cleanup_probe cartotouch
         cleanup_probe beacon
 
-        cp /usr/data/pellcorp/k1/cartographer.conf /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer.conf /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --file moonraker.conf --add-include "cartographer.conf" || exit $?
 
-        cp /usr/data/pellcorp/k1/cartographer_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartographer_macro.cfg" || exit $?
 
         $CONFIG_HELPER --replace-section-entry "stepper_z" "homing_retract_dist" "0" || exit $?
 
-        cp /usr/data/pellcorp/k1/cartographer.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartographer.cfg" || exit $?
 
         CARTO_SERIAL_ID=$(ls /dev/serial/by-id/usb-Cartographer* | head -1)
@@ -988,7 +972,7 @@ setup_cartographer() {
             echo "WARNING: There does not seem to be a cartographer attached - skipping auto configuration"
         fi
 
-        cp /usr/data/pellcorp/k1/cartographer-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartographer-${model}.cfg" || exit $?
 
         # because the model sits out the back we do need to set position max back
@@ -996,7 +980,7 @@ setup_cartographer() {
         position_max=$((position_max-16))
         $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-        echo "cartographer-probe" >> /usr/data/pellcorp.done
+        echo "cartographer-probe" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -1004,7 +988,7 @@ setup_cartographer() {
 }
 
 setup_cartotouch() {
-    grep -q "cartotouch-probe" /usr/data/pellcorp.done
+    grep -q "cartotouch-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up carto touch ..."
@@ -1015,15 +999,15 @@ setup_cartotouch() {
         cleanup_probe cartographer
         cleanup_probe beacon
 
-        cp /usr/data/pellcorp/k1/cartographer.conf /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer.conf /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --file moonraker.conf --add-include "cartographer.conf" || exit $?
 
-        cp /usr/data/pellcorp/k1/cartotouch_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartotouch_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartotouch_macro.cfg" || exit $?
 
         $CONFIG_HELPER --replace-section-entry "stepper_z" "homing_retract_dist" "0" || exit $?
 
-        cp /usr/data/pellcorp/k1/cartotouch.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartotouch.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartotouch.cfg" || exit $?
 
         # a slight change to the way cartotouch is configured
@@ -1041,13 +1025,13 @@ setup_cartotouch() {
         $CONFIG_HELPER --remove-section "scanner" || exit $?
         $CONFIG_HELPER --add-section "scanner" || exit $?
 
-        if grep -q "#*# [scanner]" /usr/data/pellcorp-overrides/printer.cfg.save_config 2> /dev/null; then
+        if grep -q "#*# [scanner]" /usr/data/Crumflight-overrides/printer.cfg.save_config 2> /dev/null; then
           $CONFIG_HELPER --replace-section-entry "scanner" "#scanner_touch_z_offset" "0.05" || exit $?
         else
           $CONFIG_HELPER --replace-section-entry "scanner" "scanner_touch_z_offset" "0.05" || exit $?
         fi
 
-        cp /usr/data/pellcorp/k1/cartographer-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartographer-${model}.cfg" || exit $?
 
         # because the model sits out the back we do need to set position max back
@@ -1055,10 +1039,10 @@ setup_cartotouch() {
         position_max=$((position_max-16))
         $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-        cp /usr/data/pellcorp/k1/cartographer_calibrate.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/cartographer_calibrate.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "cartographer_calibrate.cfg" || exit $?
 
-        echo "cartotouch-probe" >> /usr/data/pellcorp.done
+        echo "cartotouch-probe" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -1066,7 +1050,7 @@ setup_cartotouch() {
 }
 
 setup_beacon() {
-    grep -q "beacon-probe" /usr/data/pellcorp.done
+    grep -q "beacon-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up beacon ..."
@@ -1077,15 +1061,15 @@ setup_beacon() {
         cleanup_probe cartographer
         cleanup_probe cartotouch
 
-        cp /usr/data/pellcorp/k1/beacon.conf /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/beacon.conf /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --file moonraker.conf --add-include "beacon.conf" || exit $?
 
-        cp /usr/data/pellcorp/k1/beacon_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/beacon_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "beacon_macro.cfg" || exit $?
 
         $CONFIG_HELPER --replace-section-entry "stepper_z" "homing_retract_dist" "0" || exit $?
 
-        cp /usr/data/pellcorp/k1/beacon.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/beacon.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "beacon.cfg" || exit $?
 
         BEACON_SERIAL_ID=$(ls /dev/serial/by-id/usb-Beacon_Beacon* | head -1)
@@ -1100,13 +1084,13 @@ setup_beacon() {
         $CONFIG_HELPER --remove-section "beacon" || exit $?
         $CONFIG_HELPER --add-section "beacon" || exit $?
 
-        if grep -q "#*# [beacon]" /usr/data/pellcorp-overrides/printer.cfg.save_config 2> /dev/null; then
+        if grep -q "#*# [beacon]" /usr/data/Crumflight-overrides/printer.cfg.save_config 2> /dev/null; then
           $CONFIG_HELPER --replace-section-entry "beacon" "#cal_nozzle_z" "0.1" || exit $?
         else
           $CONFIG_HELPER --replace-section-entry "beacon" "cal_nozzle_z" "0.1" || exit $?
         fi
 
-        cp /usr/data/pellcorp/k1/beacon-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/beacon-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "beacon-${model}.cfg" || exit $?
 
         position_max=$($CONFIG_HELPER --get-section-entry "stepper_y" "position_max")
@@ -1115,7 +1099,7 @@ setup_beacon() {
         position_max=$((position_max-25))
         $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-        echo "beacon-probe" >> /usr/data/pellcorp.done
+        echo "beacon-probe" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -1123,7 +1107,7 @@ setup_beacon() {
 }
 
 setup_btteddy() {
-    grep -q "btteddy-probe" /usr/data/pellcorp.done
+    grep -q "btteddy-probe" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
         echo
         echo "INFO: Setting up btteddy ..."
@@ -1134,7 +1118,7 @@ setup_btteddy() {
         cleanup_probe cartotouch
         cleanup_probe beacon
 
-        cp /usr/data/pellcorp/k1/btteddy.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/btteddy.cfg /usr/data/printer_data/config/ || exit $?
         
         BTTEDDY_SERIAL_ID=$(ls /dev/serial/by-id/usb-Klipper_rp2040* | head -1)
         if [ -n "$BTTEDDY_SERIAL_ID" ]; then
@@ -1143,7 +1127,7 @@ setup_btteddy() {
             echo "WARNING: There does not seem to be a btt eddy attached - skipping auto configuration"
         fi
         $CONFIG_HELPER --add-include "btteddy.cfg" || exit $?
-        cp /usr/data/pellcorp/k1/btteddy_macro.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/btteddy_macro.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "btteddy_macro.cfg" || exit $?
 
         $CONFIG_HELPER --remove-section "probe_eddy_current btt_eddy" || exit $?
@@ -1152,13 +1136,13 @@ setup_btteddy() {
         # for an update the save config has not as yet been reapplied to printer.cfg so we need to check the overrides
         # according to https://klipper.discourse.group/t/eddy-current-sensor-homing-and-calibration-problems/16670/11 setting
         # a bigger default reg_drive_current should allow the BTT_EDDY_CALIBRATE_DRIVE_CURRENT to return a more accurate value
-        if grep -q "#*# [probe_eddy_current btt_eddy]" /usr/data/pellcorp-overrides/printer.cfg.save_config 2> /dev/null; then
+        if grep -q "#*# [probe_eddy_current btt_eddy]" /usr/data/Crumflight-overrides/printer.cfg.save_config 2> /dev/null; then
           $CONFIG_HELPER --replace-section-entry "probe_eddy_current btt_eddy" "#reg_drive_current" "31" || exit $?
         else
           $CONFIG_HELPER --replace-section-entry "probe_eddy_current btt_eddy" "reg_drive_current" "31" || exit $?
         fi
 
-        cp /usr/data/pellcorp/k1/btteddy-${model}.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/btteddy-${model}.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "btteddy-${model}.cfg" || exit $?
 
         # because the model sits out the back we do need to set position max back
@@ -1166,10 +1150,10 @@ setup_btteddy() {
         position_max=$((position_max-16))
         $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-        cp /usr/data/pellcorp/k1/btteddy_calibrate.cfg /usr/data/printer_data/config/ || exit $?
+        cp /usr/data/Crumflight/k1/btteddy_calibrate.cfg /usr/data/printer_data/config/ || exit $?
         $CONFIG_HELPER --add-include "btteddy_calibrate.cfg" || exit $?
 
-        echo "btteddy-probe" >> /usr/data/pellcorp.done
+        echo "btteddy-probe" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
@@ -1178,22 +1162,22 @@ setup_btteddy() {
 
 install_entware() {
     local mode=$1
-    if ! grep -q "entware" /usr/data/pellcorp.done; then
+    if ! grep -q "entware" /usr/data/Crumflight.done; then
         echo
-        /usr/data/pellcorp/k1/entware-install.sh "$mode" || exit $?
+        /usr/data/Crumflight/k1/entware-install.sh "$mode" || exit $?
 
-        echo "entware" >> /usr/data/pellcorp.done
+        echo "entware" >> /usr/data/Crumflight.done
         sync
     fi
 }
 
 function apply_overrides() {
     return_status=0
-    grep -q "overrides" /usr/data/pellcorp.done
+    grep -q "overrides" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
-        /usr/data/pellcorp/k1/apply-overrides.sh
+        /usr/data/Crumflight/k1/apply-overrides.sh
         return_status=$?
-        echo "overrides" >> /usr/data/pellcorp.done
+        echo "overrides" >> /usr/data/Crumflight.done
         sync
     fi
     return $return_status
@@ -1232,13 +1216,13 @@ restart_moonraker() {
 mkdir -p /usr/data/printer_data/config/backups/
 mv /usr/data/printer_data/config/*.bkp /usr/data/printer_data/config/backups/ 2> /dev/null
 
-mkdir -p /usr/data/pellcorp-backups
+mkdir -p /usr/data/Crumflight-backups
 # so if the installer has never been run we should grab a backup of the printer.cfg
-if [ ! -f /usr/data/pellcorp.done ] && [ ! -f /usr/data/pellcorp-backups/printer.factory.cfg ]; then
+if [ ! -f /usr/data/Crumflight.done ] && [ ! -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
     # just to make sure we don't accidentally copy printer.cfg to backup if the backup directory
     # is deleted, add a stamp to config files to we can know for sure.
     if ! grep -q "# Modified by Simple AF " /usr/data/printer_data/config/printer.cfg; then
-        cp /usr/data/printer_data/config/printer.cfg /usr/data/pellcorp-backups/printer.factory.cfg
+        cp /usr/data/printer_data/config/printer.cfg /usr/data/Crumflight-backups/printer.factory.cfg
     else
       echo "ERROR: No pristine factory printer.cfg available"
     fi
@@ -1332,30 +1316,30 @@ done
 $CONFIG_HELPER --remove-include "addons/*.cfg"
 sync
 
-# the pellcorp-backups do not need .pellcorp extension, so this is to fix backwards compatible
-if [ -f /usr/data/pellcorp-backups/printer.pellcorp.cfg ]; then
-    mv /usr/data/pellcorp-backups/printer.pellcorp.cfg /usr/data/pellcorp-backups/printer.cfg
+# the Crumflight-backups do not need .Crumflight extension, so this is to fix backwards compatible
+if [ -f /usr/data/Crumflight-backups/printer.Crumflight.cfg ]; then
+    mv /usr/data/Crumflight-backups/printer.Crumflight.cfg /usr/data/Crumflight-backups/printer.cfg
 fi
 
 if [ "$mode" = "reinstall" ] || [ "$mode" = "update" ]; then
-    if [ "$skip_overrides" != "true" ] && [ -f /usr/data/pellcorp-backups/printer.cfg ]; then
+    if [ "$skip_overrides" != "true" ] && [ -f /usr/data/Crumflight-backups/printer.cfg ]; then
         echo
-        /usr/data/pellcorp/k1/config-overrides.sh
+        /usr/data/Crumflight/k1/config-overrides.sh
     fi
 
-    if [ -f /usr/data/pellcorp.done ]; then
-      rm /usr/data/pellcorp.done
+    if [ -f /usr/data/Crumflight.done ]; then
+      rm /usr/data/Crumflight.done
     fi
 
     # if we took a post factory reset backup for a reinstall restore it now
-    if [ -f /usr/data/pellcorp-backups/printer.factory.cfg ]; then
-        cp /usr/data/pellcorp-backups/printer.factory.cfg /usr/data/printer_data/config/printer.cfg
+    if [ -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
+        cp /usr/data/Crumflight-backups/printer.factory.cfg /usr/data/printer_data/config/printer.cfg
         DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S")
         sed -i "1s/^/# Modified by Simple AF ${DATE_TIME}\n/" /usr/data/printer_data/config/printer.cfg
 
         for file in printer.cfg moonraker.conf; do
-            if [ -f /usr/data/pellcorp-backups/$file ]; then
-                rm /usr/data/pellcorp-backups/$file
+            if [ -f /usr/data/Crumflight-backups/$file ]; then
+                rm /usr/data/Crumflight-backups/$file
             fi
         done
     elif [ "$mode" = "update" ]; then
@@ -1366,14 +1350,14 @@ fi
 sync
 
 # add a service to take care of updating various config files if ip address changes
-cp /usr/data/pellcorp/k1/services/S96ipaddress /etc/init.d/
+cp /usr/data/Crumflight/k1/services/S96ipaddress /etc/init.d/
 
 ln -sf /var/log/messages /usr/data/printer_data/logs/
 
 # lets make sure we are not stranded in some repo dir
 cd /root
 
-touch /usr/data/pellcorp.done
+touch /usr/data/Crumflight.done
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 cp /usr/data/printer_data/config/printer.cfg /usr/data/printer_data/config/backups/printer-${TIMESTAMP}.cfg
 sync
@@ -1442,8 +1426,8 @@ else
     exit 1
 fi
 
-# there will be no support for generating pellcorp-overrides unless you have done a factory reset
-if [ -f /usr/data/pellcorp-backups/printer.factory.cfg ]; then
+# there will be no support for generating Crumflight-overrides unless you have done a factory reset
+if [ -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
     probe_model=${probe}
 
     # FIXME - when we migrate cartotouch back to cartographer remember to remove this if
@@ -1455,12 +1439,12 @@ if [ -f /usr/data/pellcorp-backups/printer.factory.cfg ]; then
     # against different generations of the original file
     for file in printer.cfg start_end.cfg fan_control.cfg useful_macros.cfg $probe_model.conf moonraker.conf sensorless.cfg ${probe}_macro.cfg ${probe}.cfg ${probe_model}-${model}.cfg; do
         if [ -f /usr/data/printer_data/config/$file ]; then
-            cp /usr/data/printer_data/config/$file /usr/data/pellcorp-backups/$file
+            cp /usr/data/printer_data/config/$file /usr/data/Crumflight-backups/$file
         fi
     done
 
     if [ -f /usr/data/guppyscreen/guppyconfig.json ]; then
-      cp /usr/data/guppyscreen/guppyconfig.json /usr/data/pellcorp-backups/
+      cp /usr/data/guppyscreen/guppyconfig.json /usr/data/Crumflight-backups/
     fi
 fi
 
@@ -1470,7 +1454,7 @@ if [ "$skip_overrides" != "true" ]; then
     apply_overrides=$?
 fi
 
-/usr/data/pellcorp/k1/update-ip-address.sh
+/usr/data/Crumflight/k1/update-ip-address.sh
 update_ip_address=$?
 
 if [ $apply_overrides -ne 0 ] || [ $install_moonraker -ne 0 ] || [ $install_cartographer_klipper -ne 0 ] || [ $install_beacon_klipper -ne 0 ] || [ $update_ip_address -ne 0 ]; then
@@ -1512,6 +1496,6 @@ if [ $apply_overrides -ne 0 ] || [ $install_guppyscreen -ne 0 ]; then
 fi
 
 echo
-/usr/data/pellcorp/k1/tools/check-firmware.sh
+/usr/data/Crumflight/k1/tools/check-firmware.sh
 
 exit 0
