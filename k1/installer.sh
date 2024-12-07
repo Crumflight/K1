@@ -75,7 +75,7 @@ function update_klipper() {
 }
 
 # special mode to update the repo only
-elif [ "$1" = "--klipper-repo" ] && [ -n "$2" ]; then
+if [ "$1" = "--klipper-repo" ] && [ -n "$2" ]; then
     klipper_repo=${2:-klipper_Kreality} # Default to klipper_Kreality
     if [ -d /usr/data/klipper/.git ]; then
         cd /usr/data/klipper/
