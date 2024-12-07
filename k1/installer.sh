@@ -58,8 +58,8 @@ update_repo() {
 }
 
 function update_klipper() {
-  if [ -d /usr/data/cartographer-klipper ]; then
-      /usr/data/cartographer-klipper/install.sh || return $?
+  if [ -d /usr/data/Klipper_kreality ]; then
+      /usr/data/Klipper_kreality/install.sh || return $?
       sync
   fi
   if [ -d /usr/data/beacon-klipper ]; then
@@ -774,33 +774,33 @@ setup_probe() {
 install_cartographer_klipper() {
     local mode=$1
 
-    grep -q "cartographer-klipper" /usr/data/Crumflight.done
+    grep -q "Klipper_kreality" /usr/data/Crumflight.done
     if [ $? -ne 0 ]; then
-        if [ "$mode" != "update" ] && [ -d /usr/data/cartographer-klipper ]; then
-            rm -rf /usr/data/cartographer-klipper
+        if [ "$mode" != "update" ] && [ -d /usr/data/Klipper_kreality ]; then
+            rm -rf /usr/data/Klipper_kreality
         fi
 
-        if [ ! -d /usr/data/cartographer-klipper ]; then
+        if [ ! -d /usr/data/Klipper_kreality ]; then
             echo
-            echo "INFO: Installing cartographer-klipper ..."
-            git clone https://github.com/Crumflight/cartographer-klipper.git /usr/data/cartographer-klipper || exit $?
+            echo "INFO: Installing Klipper_kreality ..."
+            git clone https://github.com/Crumflight/Klipper_kreality.git /usr/data/Klipper_kreality || exit $?
         else
-          cd /usr/data/cartographer-klipper
+          cd /usr/data/Klipper_kreality
           REMOTE_URL=$(git remote get-url origin)
-          if [ "$REMOTE_URL" != "https://github.com/Crumflight/cartographer-klipper.git" ]; then
-            echo "INFO: Switching cartographer-klipper to Crumflight fork"
-            git remote set-url origin https://github.com/Crumflight/cartographer-klipper.git
+          if [ "$REMOTE_URL" != "https://github.com/Crumflight/Klipper_kreality.git" ]; then
+            echo "INFO: Switching Klipper_kreality to Crumflight fork"
+            git remote set-url origin https://github.com/Crumflight/Klipper_kreality.git
             git fetch origin
           fi
         fi
         cd - > /dev/null
 
         echo
-        echo "INFO: Running cartographer-klipper installer ..."
-        bash /usr/data/cartographer-klipper/install.sh || exit $?
+        echo "INFO: Running Klipper_kreality installer ..."
+        bash /usr/data/Klipper_kreality/install.sh || exit $?
         /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || exit $?
 
-        echo "cartographer-klipper" >> /usr/data/Crumflight.done
+        echo "Klipper_kreality" >> /usr/data/Crumflight.done
         sync
         return 1
     fi
