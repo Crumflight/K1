@@ -268,62 +268,62 @@ install_nginx() {
 
     if [ "$mode" != "update" ] && [ -d /usr/data/nginx ]; then
         [ -f /etc/init.d/S50nginx_service ] && /etc/init.d/S50nginx_service stop
-        rm -rf /usr.data/nginx
+        rm -rf /usr/data/nginx
     fi
 
-    if [ ! -d /usr.data/nginx ]; then
+    if [ ! -d /usr/data/nginx ]; then
         echo
         echo "INFO: Installing nginx ..."
-        tar -zxf /usr.data/Crumflight/k1/nginx.tar.gz -C /usr.data/ || exit $?
+        tar -zxf /usr/data/Crumflight/k1/nginx.tar.gz -C /usr/data/ || exit $?
     fi
 
     echo "INFO: Updating nginx config ..."
-    cp /usr.data/Crumflight/k1/nginx.conf /usr.data/nginx/nginx/ || exit $?
-    mkdir -p /usr.data/nginx/nginx/sites/
-    cp /usr.data/Crumflight/k1/nginx/fluidd /usr.data/nginx/nginx/sites/ || exit $?
-    cp /usr.data/Crumflight/k1/nginx/mainsail /usr.data/nginx/nginx/sites/ || exit $?
+    cp /usr/data/Crumflight/k1/nginx.conf /usr/data/nginx/nginx/ || exit $?
+    mkdir -p /usr/data/nginx/nginx/sites/
+    cp /usr/data/Crumflight/k1/nginx/fluidd /usr/data/nginx/nginx/sites/ || exit $?
+    cp /usr/data/Crumflight/k1/nginx/mainsail /usr/data/nginx/nginx/sites/ || exit $?
 
     if [ "$default_ui" = "mainsail" ]; then
       echo "INFO: Restoring mainsail as default UI"
-      sed -i 's/.*listen 80 default_server;/    #listen 80 default_server;/g' /usr.data/nginx/nginx/sites/fluidd
-      sed -i 's/.*#listen 80 default_server;/    listen 80 default_server;/g' /usr.data/nginx/nginx/sites/mainsail
+      sed -i 's/.*listen 80 default_server;/    #listen 80 default_server;/g' /usr/data/nginx/nginx/sites/fluidd
+      sed -i 's/.*#listen 80 default_server;/    listen 80 default_server;/g' /usr/data/nginx/nginx/sites/mainsail
     fi
 
-    cp /usr.data/Crumflight/k1/services/S50nginx_service /etc/init.d/ || exit $?
+    cp /usr/data/Crumflight/k1/services/S50nginx_service /etc/init.d/ || exit $?
 
-    echo "nginx" >> /usr.data/Crumflight.done
+    echo "nginx" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_fluidd() {
     local mode=$1
-    grep -q "fluidd" /usr.data/Crumflight.done && return 0
+    grep -q "fluidd" /usr/data/Crumflight.done && return 0
 
-    if [ "$mode" != "update" ] && [ -d /usr.data/fluidd ]; then
-        rm -rf /usr.data/fluidd
+    if [ "$mode" != "update" ] && [ -d /usr/data/fluidd ]; then
+        rm -rf /usr/data/fluidd
     fi
-    if [ "$mode" != "update" ] && [ -d /usr.data/fluidd-config ]; then
-        rm -rf /usr.data/fluidd-config
+    if [ "$mode" != "update" ] && [ -d /usr/data/fluidd-config ]; then
+        rm -rf /usr/data/fluidd-config
     fi
 
-    if [ ! -d /usr.data/fluidd ]; then
+    if [ ! -d /usr/data/fluidd ]; then
         echo
         echo "INFO: Installing fluidd ..."
-        mkdir -p /usr.data/fluidd || exit $?
-        curl -L "https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip" -o /usr.data/fluidd.zip || exit $?
-        unzip -qd /usr.data/fluidd /usr.data/fluidd.zip || exit $?
-        rm /usr.data/fluidd.zip
+        mkdir -p /usr/data/fluidd || exit $?
+        curl -L "https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip" -o /usr/data/fluidd.zip || exit $?
+        unzip -qd /usr/data/fluidd /usr/data/fluidd.zip || exit $?
+        rm /usr/data/fluidd.zip
     fi
 
-    if [ ! -d /usr.data/fluidd-config ]; then
-        git clone https://github.com/fluidd-core/fluidd-config.git /usr.data/fluidd-config || exit $?
+    if [ ! -d /usr/data/fluidd-config ]; then
+        git clone https://github.com/fluidd-core/fluidd-config.git /usr/data/fluidd-config || exit $?
     fi
 
     echo "INFO: Updating fluidd config ..."
-    [ -f /usr.data/printer_data/config/fluidd.cfg ] && rm /usr.data/printer_data/config/fluidd.cfg
-    ln -sf /usr.data/fluidd-config/client.cfg /usr.data/printer_data/config/fluidd.cfg
-    ln -sf /usr.data/printer_data/ /root
+    [ -f /usr/data/printer_data/config/fluidd.cfg ] && rm /usr/data/printer_data/config/fluidd.cfg
+    ln -sf /usr/data/fluidd-config/client.cfg /usr/data/printer_data/config/fluidd.cfg
+    ln -sf /usr/data/printer_data/ /root
 
     $CONFIG_HELPER --remove-section "pause_resume" || true
     $CONFIG_HELPER --remove-section "display_status" || true
@@ -331,66 +331,66 @@ install_fluidd() {
 
     $CONFIG_HELPER --add-include "fluidd.cfg" || exit $?
 
-    echo "fluidd" >> /usr.data/Crumflight.done
+    echo "fluidd" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_mainsail() {
     local mode=$1
-    grep -q "mainsail" /usr.data/Crumflight.done && return 0
+    grep -q "mainsail" /usr/data/Crumflight.done && return 0
 
-    if [ "$mode" != "update" ] && [ -d /usr.data/mainsail ]; then
-        rm -rf /usr.data/mainsail
+    if [ "$mode" != "update" ] && [ -d /usr/data/mainsail ]; then
+        rm -rf /usr/data/mainsail
     fi
 
-    if [ ! -d /usr.data/mainsail ]; then
+    if [ ! -d /usr/data/mainsail ]; then
         echo
         echo "INFO: Installing mainsail ..."
-        mkdir -p /usr.data/mainsail || exit $?
-        curl -L "https://github.com/mainsail-crew/mainsail/releases/latest/download/mainsail.zip" -o /usr.data/mainsail.zip || exit $?
-        unzip -qd /usr.data/mainsail /usr.data/mainsail.zip || exit $?
-        rm /usr.data/mainsail.zip
+        mkdir -p /usr/data/mainsail || exit $?
+        curl -L "https://github.com/mainsail-crew/mainsail/releases/latest/download/mainsail.zip" -o /usr/data/mainsail.zip || exit $?
+        unzip -qd /usr/data/mainsail /usr/data/mainsail.zip || exit $?
+        rm /usr/data/mainsail.zip
     fi
 
-    echo "mainsail" >> /usr.data/Crumflight.done
+    echo "mainsail" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_kamp() {
     local mode=$1
-    grep -q "KAMP" /usr.data/Crumflight.done && return 0
+    grep -q "KAMP" /usr/data/Crumflight.done && return 0
 
-    if [ "$mode" != "update" ] && [ -d /usr.data/KAMP ]; then
-        rm -rf /usr.data/KAMP
+    if [ "$mode" != "update" ] && [ -d /usr/data/KAMP ]; then
+        rm -rf /usr/data/KAMP
     fi
 
-    if [ ! -d /usr.data/KAMP/.git ]; then
+    if [ ! -d /usr/data/KAMP/.git ]; then
         echo
         echo "INFO: Installing KAMP ..."
-        [ -d /usr.data/KAMP ] && rm -rf /usr.data/KAMP
-        git clone https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git /usr.data/KAMP || exit $?
+        [ -d /usr/data/KAMP ] && rm -rf /usr/data/KAMP
+        git clone https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git /usr/data/KAMP || exit $?
     fi
 
     echo "INFO: Updating KAMP config ..."
-    ln -sf /usr.data/KAMP/Configuration /usr.data/printer_data/config/KAMP || exit $?
-    cp /usr.data/KAMP/Configuration/KAMP_Settings.cfg /usr.data/printer_data/config/ || exit $?
+    ln -sf /usr/data/KAMP/Configuration /usr/data/printer_data/config/KAMP || exit $?
+    cp /usr/data/KAMP/Configuration/KAMP_Settings.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --add-include "KAMP_Settings.cfg" || exit $?
 
-    sed -i 's:#\[include ./KAMP/Line_Purge.cfg\]:\[include ./KAMP/Line_Purge.cfg\]:g' /usr.data/printer_data/config/KAMP_Settings.cfg
-    sed -i 's:#\[include ./KAMP/Smart_Park.cfg\]:\[include ./KAMP/Smart_Park.cfg\]:g' /usr.data/printer_data/config/KAMP_Settings.cfg
+    sed -i 's:#\[include ./KAMP/Line_Purge.cfg\]:\[include ./KAMP/Line_Purge.cfg\]:g' /usr/data/printer_data/config/KAMP_Settings.cfg
+    sed -i 's:#\[include ./KAMP/Smart_Park.cfg\]:\[include ./KAMP/Smart_Park.cfg\]:g' /usr/data/printer_data/config/KAMP_Settings.cfg
 
-    cp /usr.data/printer_data/config/KAMP_Settings.cfg /usr.data/Crumflight-backups/
+    cp /usr/data/printer_data/config/KAMP_Settings.cfg /usr/data/Crumflight-backups/
 
-    echo "KAMP" >> /usr.data/Crumflight.done
+    echo "KAMP" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_klipper() {
     local mode=$1
-    grep -q "klipper" /usr.data/Crumflight.done && return 0
+    grep -q "klipper" /usr/data/Crumflight.done && return 0
 
     echo "INFO: Installing/updating Klipper ..."
     # Use variables (possibly overridden by arguments)
@@ -398,22 +398,22 @@ install_klipper() {
     # If no branch specified, we just use the default branch from the repository
     # klipper_branch can be empty meaning default branch
 
-    if [ "$mode" != "update" ] && [ -d /usr.data/klipper ]; then
+    if [ "$mode" != "update" ] && [ -d /usr/data/klipper ]; then
         [ -f /etc/init.d/S55klipper_service ] && /etc/init.d/S55klipper_service stop
-        rm -rf /usr.data/klipper
-        [ -f /usr.data/Crumflight.klipper ] && rm /usr.data/Crumflight.klipper
+        rm -rf /usr/data/klipper
+        [ -f /usr/data/Crumflight.klipper ] && rm /usr/data/Crumflight.klipper
     fi
 
-    if [ ! -d /usr.data/klipper/.git ]; then
+    if [ ! -d /usr/data/klipper/.git ]; then
         echo "INFO: Cloning Klipper from $klipper_repo_url ..."
-        git clone "$klipper_repo_url" /usr.data/klipper || exit $?
+        git clone "$klipper_repo_url" /usr/data/klipper || exit $?
         if [ -n "$klipper_branch" ]; then
-            cd /usr.data/klipper
+            cd /usr/data/klipper
             git checkout "$klipper_branch" || exit $?
             cd -
         fi
     else
-        cd /usr.data/klipper
+        cd /usr/data/klipper
         # If branch specified, attempt to switch
         if [ -n "$klipper_branch" ]; then
             git fetch
@@ -427,18 +427,18 @@ install_klipper() {
         cd -
     fi
 
-    /usr/share/klippy-env/bin/python3 -m compileall /usr.data/klipper/klippy || exit $?
+    /usr/share/klippy-env/bin/python3 -m compileall /usr/data/klipper/klippy || exit $?
 
     [ -e /usr/share/klipper ] && rm -rf /usr/share/klipper
-    ln -sf /usr.data/klipper /usr/share/
+    ln -sf /usr/data/klipper /usr/share/
     [ -e /root/klipper ] && rm -rf /root/klipper
-    ln -sf /usr.data/klipper /root
+    ln -sf /usr/data/klipper /root
 
-    cp /usr.data/Crumflight/k1/services/S55klipper_service /etc/init.d/ || exit $?
-    cp /usr.data/Crumflight/k1/services/S13mcu_update /etc/init.d/ || exit $?
+    cp /usr/data/Crumflight/k1/services/S55klipper_service /etc/init.d/ || exit $?
+    cp /usr/data/Crumflight/k1/services/S13mcu_update /etc/init.d/ || exit $?
 
-    cp /usr.data/Crumflight/k1/sensorless.cfg /usr.data/printer_data/config/ || exit $?
-    cp /usr.data/Crumflight/k1/useful_macros.cfg /usr.data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/sensorless.cfg /usr/data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/useful_macros.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --add-include "useful_macros.cfg" || exit $?
 
     $CONFIG_HELPER --remove-section "mcu rpi"
@@ -455,15 +455,15 @@ install_klipper() {
     $CONFIG_HELPER --remove-include "gcode_macro.cfg"
     $CONFIG_HELPER --remove-include "custom_gcode.cfg"
 
-    [ -f /usr.data/printer_data/config/custom_gcode.cfg ] && rm /usr.data/printer_data/config/custom_gcode.cfg
-    [ -f /usr.data/printer_data/config/gcode_macro.cfg ] && rm /usr.data/printer_data/config/gcode_macro.cfg
-    [ -f /usr.data/printer_data/config/printer_params.cfg ] && rm /usr.data/printer_data/config/printer_params.cfg
-    [ -f /usr.data/printer_data/config/factory_printer.cfg ] && rm /usr.data/printer_data/config/factory_printer.cfg
+    [ -f /usr/data/printer_data/config/custom_gcode.cfg ] && rm /usr/data/printer_data/config/custom_gcode.cfg
+    [ -f /usr/data/printer_data/config/gcode_macro.cfg ] && rm /usr/data/printer_data/config/gcode_macro.cfg
+    [ -f /usr/data/printer_data/config/printer_params.cfg ] && rm /usr/data/printer_data/config/printer_params.cfg
+    [ -f /usr/data/printer_data/config/factory_printer.cfg ] && rm /usr/data/printer_data/config/factory_printer.cfg
 
-    cp /usr.data/Crumflight/k1/start_end.cfg /usr.data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/start_end.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --add-include "start_end.cfg" || exit $?
 
-    cp /usr.data/Crumflight/k1/fan_control.cfg /usr.data/printer_data/config || exit $?
+    cp /usr/data/Crumflight/k1/fan_control.cfg /usr/data/printer_data/config || exit $?
     $CONFIG_HELPER --add-include "fan_control.cfg" || exit $?
 
     $CONFIG_HELPER --remove-section "output_pin fan0"
@@ -484,44 +484,44 @@ install_klipper() {
     $CONFIG_HELPER --remove-section "multi_pin heater_fans"
     $CONFIG_HELPER --remove-section "idle_timeout"
 
-    echo "klipper" >> /usr.data/Crumflight.done
+    echo "klipper" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_guppyscreen() {
     local mode=$1
-    grep -q "guppyscreen" /usr.data/Crumflight.done && return 0
+    grep -q "guppyscreen" /usr/data/Crumflight.done && return 0
 
-    if [ "$mode" != "update" ] && [ -d /usr.data/guppyscreen ]; then
+    if [ "$mode" != "update" ] && [ -d /usr/data/guppyscreen ]; then
         [ -f /etc/init.d/S99guppyscreen ] && /etc/init.d/S99guppyscreen stop
         killall -q guppyscreen || true
-        rm -rf /usr.data/guppyscreen
+        rm -rf /usr/data/guppyscreen
     fi
 
-    if [ ! -d /usr.data/guppyscreen ]; then
+    if [ ! -d /usr/data/guppyscreen ]; then
         echo
         echo "INFO: Installing guppyscreen ..."
-        curl -L "https://github.com/ballaswag/guppyscreen/releases/latest/download/guppyscreen.tar.gz" -o /usr.data/guppyscreen.tar.gz || exit $?
-        tar xf /usr.data/guppyscreen.tar.gz -C /usr.data/ || exit $?
-        rm /usr.data/guppyscreen.tar.gz
+        curl -L "https://github.com/ballaswag/guppyscreen/releases/latest/download/guppyscreen.tar.gz" -o /usr/data/guppyscreen.tar.gz || exit $?
+        tar xf /usr/data/guppyscreen.tar.gz -C /usr/data/ || exit $?
+        rm /usr/data/guppyscreen.tar.gz
     fi
 
     echo "INFO: Updating guppyscreen config ..."
-    cp /usr.data/Crumflight/k1/services/S99guppyscreen /etc/init.d/ || exit $?
-    cp /usr.data/Crumflight/k1/guppyconfig.json /usr.data/guppyscreen || exit $?
+    cp /usr/data/Crumflight/k1/services/S99guppyscreen /etc/init.d/ || exit $?
+    cp /usr/data/Crumflight/k1/guppyconfig.json /usr/data/guppyscreen || exit $?
 
-    cp /usr.data/Crumflight/k1/guppyscreen.cfg /usr.data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/guppyscreen.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --remove-include "GuppyScreen/*.cfg" || true
     $CONFIG_HELPER --add-include "guppyscreen.cfg" || exit $?
 
-    echo "guppyscreen" >> /usr.data/Crumflight.done
+    echo "guppyscreen" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 setup_bltouch() {
-    grep -q "bltouch-probe" /usr.data/Crumflight.done && return 0
+    grep -q "bltouch-probe" /usr/data/Crumflight.done && return 0
     echo
     echo "INFO: Setting up BLTouch ..."
 
@@ -530,39 +530,39 @@ setup_bltouch() {
     $CONFIG_HELPER --replace-section-entry "stepper_z" "endstop_pin" "probe:z_virtual_endstop" || true
 
     # Overwrite with BLTouch config
-    [ -f /usr.data/printer_data/config/bltouch.cfg ] && rm /usr.data/printer_data/config/bltouch.cfg
+    [ -f /usr/data/printer_data/config/bltouch.cfg ] && rm /usr/data/printer_data/config/bltouch.cfg
     $CONFIG_HELPER --remove-include "bltouch.cfg" || true
-    $CONFIG_HELPER --overrides "/usr.data/Crumflight/k1/bltouch.cfg" || exit $?
+    $CONFIG_HELPER --overrides "/usr/data/Crumflight/k1/bltouch.cfg" || exit $?
 
-    cp /usr.data/Crumflight/k1/bltouch_macro.cfg /usr.data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/bltouch_macro.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --add-include "bltouch_macro.cfg" || exit $?
 
-    cp /usr.data/Crumflight/k1/bltouch-${model}.cfg /usr.data/printer_data/config/ || exit $?
+    cp /usr/data/Crumflight/k1/bltouch-${model}.cfg /usr/data/printer_data/config/ || exit $?
     $CONFIG_HELPER --add-include "bltouch-${model}.cfg" || exit $?
 
     position_max=$($CONFIG_HELPER --get-section-entry "stepper_y" "position_max")
     position_max=$((position_max-17))
     $CONFIG_HELPER --replace-section-entry "stepper_y" "position_max" "$position_max" || exit $?
 
-    echo "bltouch-probe" >> /usr.data/Crumflight.done
+    echo "bltouch-probe" >> /usr/data/Crumflight.done
     sync
     return 1
 }
 
 install_entware() {
     local mode=$1
-    grep -q "entware" /usr.data/Crumflight.done && return 0
+    grep -q "entware" /usr/data/Crumflight.done && return 0
     echo
     /usr/data/Crumflight/k1/entware-install.sh "$mode" || exit $?
-    echo "entware" >> /usr.data/Crumflight.done
+    echo "entware" >> /usr/data/Crumflight.done
     sync
 }
 
 apply_overrides() {
-    grep -q "overrides" /usr.data/Crumflight.done && return 0
+    grep -q "overrides" /usr/data/Crumflight.done && return 0
     /usr/data/Crumflight/k1/apply-overrides.sh
     retval=$?
-    echo "overrides" >> /usr.data/Crumflight.done
+    echo "overrides" >> /usr/data/Crumflight.done
     sync
     return $retval
 }
@@ -594,13 +594,13 @@ restart_moonraker() {
 }
 
 # Move backups
-mkdir -p /usr.data/printer_data/config/backups/
-mv /usr.data/printer_data/config/*.bkp /usr.data/printer_data/config/backups/ 2>/dev/null || true
+mkdir -p /usr/data/printer_data/config/backups/
+mv /usr/data/printer_data/config/*.bkp /usr/data/printer_data/config/backups/ 2>/dev/null || true
 
-mkdir -p /usr.data/Crumflight-backups
-if [ ! -f /usr.data/Crumflight.done ] && [ ! -f /usr.data/Crumflight-backups/printer.factory.cfg ]; then
-    if ! grep -q "# Modified by Simple AF " /usr.data/printer_data/config/printer.cfg; then
-        cp /usr.data/printer_data/config/printer.cfg /usr.data/Crumflight-backups/printer.factory.cfg
+mkdir -p /usr/data/Crumflight-backups
+if [ ! -f /usr/data/Crumflight.done ] && [ ! -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
+    if ! grep -q "# Modified by Simple AF " /usr/data/printer_data/config/printer.cfg; then
+        cp /usr/data/printer_data/config/printer.cfg /usr/data/Crumflight-backups/printer.factory.cfg
     else
       echo "ERROR: No pristine factory printer.cfg available"
     fi
@@ -658,32 +658,32 @@ install_config_updater
 
 # Remove old addons
 for dir in addons SimpleAddon; do
-  [ -d /usr.data/printer_data/config/$dir ] && rm -rf /usr.data/printer_data/config/$dir
+  [ -d /usr/data/printer_data/config/$dir ] && rm -rf /usr/data/printer_data/config/$dir
 done
 for file in save-zoffset.cfg eddycalibrate.cfg quickstart.cfg cartographer_calibrate.cfg btteddy_calibrate.cfg; do
   $CONFIG_HELPER --remove-include "SimpleAddon/$file" || true
 done
 sync
 
-if [ -f /usr.data/Crumflight-backups/printer.Crumflight.cfg ]; then
-    mv /usr.data/Crumflight-backups/printer.Crumflight.cfg /usr.data/Crumflight-backups/printer.cfg
+if [ -f /usr/data/Crumflight-backups/printer.Crumflight.cfg ]; then
+    mv /usr/data/Crumflight-backups/printer.Crumflight.cfg /usr/data/Crumflight-backups/printer.cfg
 fi
 
 if [ "$mode" = "reinstall" ] || [ "$mode" = "update" ]; then
-    if [ "$skip_overrides" != "true" ] && [ -f /usr.data/Crumflight-backups/printer.cfg ]; then
+    if [ "$skip_overrides" != "true" ] && [ -f /usr/data/Crumflight-backups/printer.cfg ]; then
         echo
-        /usr.data/Crumflight/k1/config-overrides.sh
+        /usr/data/Crumflight/k1/config-overrides.sh
     fi
 
-    [ -f /usr.data/Crumflight.done ] && rm /usr.data/Crumflight.done
+    [ -f /usr/data/Crumflight.done ] && rm /usr/data/Crumflight.done
 
-    if [ -f /usr.data/Crumflight-backups/printer.factory.cfg ]; then
-        cp /usr.data/Crumflight-backups/printer.factory.cfg /usr.data/printer_data/config/printer.cfg
+    if [ -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
+        cp /usr/data/Crumflight-backups/printer.factory.cfg /usr/data/printer_data/config/printer.cfg
         DATE_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-        sed -i "1s/^/# Modified by Simple AF ${DATE_TIME}\n/" /usr.data/printer_data/config/printer.cfg
+        sed -i "1s/^/# Modified by Simple AF ${DATE_TIME}\n/" /usr/data/printer_data/config/printer.cfg
 
         for file in printer.cfg moonraker.conf; do
-            [ -f /usr.data/Crumflight-backups/$file ] && rm /usr.data/Crumflight-backups/$file
+            [ -f /usr/data/Crumflight-backups/$file ] && rm /usr/data/Crumflight-backups/$file
         done
     elif [ "$mode" = "update" ]; then
         echo "ERROR: Update mode not possible without a pristine factory printer.cfg"
@@ -692,12 +692,12 @@ if [ "$mode" = "reinstall" ] || [ "$mode" = "update" ]; then
 fi
 sync
 
-cp /usr.data/Crumflight/k1/services/S96ipaddress /etc/init.d/
-ln -sf /var/log/messages /usr.data/printer_data/logs/
+cp /usr/data/Crumflight/k1/services/S96ipaddress /etc/init.d/
+ln -sf /var/log/messages /usr/data/printer_data/logs/
 
-touch /usr.data/Crumflight.done
+touch /usr/data/Crumflight.done
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-cp /usr.data/printer_data/config/printer.cfg /usr.data/printer_data/config/backups/printer-${TIMESTAMP}.cfg
+cp /usr/data/printer_data/config/printer.cfg /usr/data/printer_data/config/backups/printer-${TIMESTAMP}.cfg
 sync
 
 install_entware $mode
@@ -713,11 +713,11 @@ klipper_restart_needed=$(install_klipper $mode; echo $?)
 guppyscreen_restart_needed=$(install_guppyscreen $mode; echo $?)
 probe_restart_needed=$(setup_bltouch; echo $?)
 
-if [ -f /usr.data/Crumflight-backups/printer.factory.cfg ]; then
+if [ -f /usr/data/Crumflight-backups/printer.factory.cfg ]; then
     for file in printer.cfg start_end.cfg fan_control.cfg useful_macros.cfg moonraker.conf sensorless.cfg bltouch_macro.cfg bltouch.cfg bltouch-${model}.cfg; do
-        [ -f /usr.data/printer_data/config/$file ] && cp /usr.data/printer_data/config/$file /usr.data/Crumflight-backups/
+        [ -f /usr/data/printer_data/config/$file ] && cp /usr/data/printer_data/config/$file /usr/data/Crumflight-backups/
     done
-    [ -f /usr.data/guppyscreen/guppyconfig.json ] && cp /usr.data/guppyscreen/guppyconfig.json /usr.data/Crumflight-backups/
+    [ -f /usr/data/guppyscreen/guppyconfig.json ] && cp /usr/data/guppyscreen/guppyconfig.json /usr/data/Crumflight-backups/
 fi
 
 apply_overrides_status=0
@@ -726,7 +726,7 @@ if [ "$skip_overrides" != "true" ]; then
     apply_overrides_status=$?
 fi
 
-/usr.data/Crumflight/k1/update-ip-address.sh
+/usr/data/Crumflight/k1/update-ip-address.sh
 update_ip_address_status=$?
 
 if [ $apply_overrides_status -ne 0 ] || [ $moonraker_restart_needed -ne 0 ] || [ $update_ip_address_status -ne 0 ]; then
@@ -764,6 +764,6 @@ if [ $apply_overrides_status -ne 0 ] || [ $guppyscreen_restart_needed -ne 0 ]; t
 fi
 
 echo
-/usr.data/Crumflight/k1/tools/check-firmware.sh
+/usr/data/Crumflight/k1/tools/check-firmware.sh
 
 exit 0
